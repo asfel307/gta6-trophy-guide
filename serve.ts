@@ -1,12 +1,8 @@
-// A small static server for the Leonida Trophy Guide, for trying it locally.
-//
-//   node serve.ts            serves app/ at http://localhost:8080
-//   node serve.ts --port 9000   serves it on another port
-//
-// It only serves files under app/, sends the MIME types a browser needs for
-// HTML, JavaScript, CSS and JSON, and refuses paths that escape the folder.
-// This is a development convenience, not a server for the internet: the guide
-// itself is plain static files and runs under any static file server.
+// serve.ts — a small static server for app/ (Node 22, standard library only).
+// Development convenience, not a production server: run `node serve.ts` and
+// open http://localhost:8080 (`--port <n>` picks another port). It serves
+// only files inside app/, sends the MIME types a browser needs for HTML, JS,
+// CSS and JSON, and refuses any path that tries to escape the folder.
 
 import { createReadStream, statSync } from 'node:fs';
 import { createServer } from 'node:http';
@@ -29,8 +25,6 @@ const MIME_TYPES = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
-  '.webp': 'image/webp',
-  '.ico': 'image/x-icon',
 };
 
 createServer((request, response) => {

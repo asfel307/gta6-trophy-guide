@@ -1,62 +1,60 @@
-// Progress storage for the Leonida Trophy Guide.
-//
-// Earned trophies live in localStorage under one key, as an array of trophy ids,
-// so progress survives a reload and works with the network off. Export writes
-// the same ids to a JSON file; import reads that file back and replaces the set.
-// Demo mode (?demo=1) seeds a fixed example set in memory only, so screenshots
-// can show a living tracker without touching the reader's saved progress.
+// store.js — progress lives in localStorage under one key, so the checklist
+// survives a reload and works with no account and no network. Export writes
+// the earned names to a file; import reads one back. Nothing here ever
+// touches a server.
 
-export const STORAGE_KEY = 'gta6-trophy-guide-v1';
+const EARNED_KEY = 'leonida-trophy-guide-earned-v1';
+const SPOILER_KEY = 'leonida-trophy-guide-spoilers-v1';
 
-// A plausible mid-story example set, used only when ?demo=1 is in the URL.
-// Thirteen trophies: the opening story beats, a few early activities and the
-// first missable-trophy protection done on time.
-export const DEMO_EARNED_IDS = [2, 3, 8, 16, 20, 21, 28, 33, 35, 42, 44, 52, 53];
-
-export function loadEarnedIds() {
+export function loadEarned() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return new Set();
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return new Set();
-    return new Set(parsed.filter((id) => Number.isInteger(id)));
+    const raw = JSON.parse(localStorage.getItem(EARNED_KEY) ?? '[]');
+    return new Set(Array.isArray(raw) ? raw.filter((n) => typeof n === 'string') : []);
   } catch {
     return new Set();
   }
 }
 
-export function saveEarnedIds(earnedIds) {
+export function saveEarned(earned) {
+  localStorage.setItem(EARNED_KEY, JSON.stringify([...earned]));
+}
+
+export function loadSpoilersHidden() {
+  return localStorage.getItem(SPOILER_KEY) === '1';
+}
+
+export function saveSpoilersHidden(hidden) {
+  localStorage.setItem(SPOILER_KEY, hidden ? '1' : '0');
+}
+
+// Builds a download of the earned trophy names as a JSON file.
+export function exportProgress(earned) {
+  const blob = new Blob([JSON.stringify({ earned: [...earned] }, null, 2)], { type: 'application/json' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'leonida-trophy-progress.json';
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+// Reads an exported progress file and returns the earned names it holds,
+// or throws a plain-English error the UI can show.
+export async function importProgress(file) {
+  const text = await file.text();
+  let parsed;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...earnedIds].sort((a, b) => a - b)));
+    parsed = JSON.parse(text);
   } catch {
-    // Private browsing or a full store: the checklist still works in memory.
+    throw new Error('That file is not valid JSON.');
   }
+  const names = Array.isArray(parsed) ? parsed : parsed.earned;
+  if (!Array.isArray(names) || !names.every((n) => typeof n === 'string')) {
+    throw new Error('That file does not hold a list of trophy names.');
+  }
+  return new Set(names);
 }
 
-export function clearEarnedIds() {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch {
-    // Nothing to clear.
-  }
-}
-
-export function demoEarnedIds() {
-  return new Set(DEMO_EARNED_IDS);
-}
-
-// Turn an imported JSON value into a set of valid trophy ids. Accepts either
-// a bare array of ids, or an object with an "earned" array of ids or names.
-export function idsFromImportedData(data, trophiesById, trophiesByName) {
-  const rawList = Array.isArray(data) ? data : data?.earned;
-  if (!Array.isArray(rawList)) return null;
-  const ids = new Set();
-  for (const entry of rawList) {
-    if (Number.isInteger(entry) && trophiesById.has(entry)) {
-      ids.add(entry);
-    } else if (typeof entry === 'string' && trophiesByName.has(entry)) {
-      ids.add(trophiesByName.get(entry).id);
-    }
-  }
-  return ids;
+export function resetProgress() {
+  localStorage.removeItem(EARNED_KEY);
+  return new Set();
 }

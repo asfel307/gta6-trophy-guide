@@ -1,93 +1,87 @@
-// The roadmap to the platinum and the missables view. Both are built from
-// the official trophy descriptions, following PowerPyx's three-step route:
-// story first, then the 100% checklist, then Strangers & Freaks and clean-up.
+// roadmap.js — the five stages to the platinum, built from the official
+// trophy descriptions: story first, stranger strands second, collectibles
+// third, the long grinds fourth, platinum last. Each stage names the trophies
+// it covers so the reader can check the plan against the checklist.
 
-export const ROADMAP_STAGES = [
+export const STAGES = [
   {
-    stage: 1,
-    title: 'Before you start: saves and the one missable trophy',
-    time: 'Chapter 1',
-    text: 'Keep a manual save at the start and end of each chapter — the game has 15 manual slots, 1 autosave slot and no mission replay. In Chapter 1, after the mission Down to Earth, talk to Lucia in the kitchen in the morning, follow her to the balcony at Jason’s house and choose Accept when she offers to meditate. That balcony meditation is gone after Chapter 1 and may be required for Positive Mental Attitude, the only potentially missable trophy. Keep a Chapter 1 save until it pops.',
-    trophyIds: [28],
+    title: 'Stage 1 — Play the story',
+    count: '13 trophies: 12 story + the choices trophy',
+    text: 'Play Chapters 1–4 and the final mission in order. This earns every chapter trophy, every named-mission trophy and the platinum’s gold story trophy.',
+    trophies: [
+      'Just Like Paradise', 'Paradise Lost', 'T**s Ass Drug Money', 'Vice City, Baby!',
+      'Top Of The World, Ma', 'You Gotta Know When to Get Off', 'Trust', 'Break the Bank',
+      'Family Matters', 'DWNFALL', 'Hi-Jacked', 'Snow Storm', 'Actions Speak Louder',
+    ],
+    tip: 'On the way, do the missables the moment they appear: Hot Together, Retail Therapy, Catch Me If You Can and Sneakthief all need a partner, a place or a quiet approach you may not get back.',
   },
   {
-    stage: 2,
-    title: 'Play the story: Chapters 1–5',
-    time: '60–80 hours',
-    text: 'Finish the story in order. Twelve trophies pop automatically: the five chapter trophies, the gold for the final mission, and the named missions Gone Fishing, Breakfast Run, The Cartel Heist, Child’s Play, Headliners, VCIA Takedown and Operation Savage Glory. There are no mission gold medals to chase. Switching between Jason and Lucia opens after Breakfast Run in Chapter 2, which is when the partner trophies become possible. Scan vehicles and study animals as you travel — that progress already counts toward the 100% checklist.',
-    trophyIds: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+    title: 'Stage 2 — Strangers & side strands',
+    count: '8 trophies',
+    text: 'Meet the strangers of Leonida and finish their strands: Andy, Kenton, Billy, Randy and Tyrone each end in a final mission with its own trophy, and finishing 8 strands earns the silver.',
+    trophies: [
+      'Road to Rehabilitation', 'This Was No Boat Accident', 'The Lone Rider',
+      'Supply & Demand', 'Spin On This!', 'Strangers & Freaks', 'Fair Game',
+      'Baited My Tackle',
+    ],
+    tip: 'Stranger markers appear as you explore, so sweep each region of the map between story chapters rather than saving them all for the end.',
   },
   {
-    stage: 3,
-    title: 'Side-character finales',
-    time: 'Alongside the story',
-    text: 'Six trophies come from finishing optional questlines: Andy (Lucia only, Chapter 3), Kenton (treasure diving, 7 shipwrecks), Billy (Thrillbilly Mudclub, Chapter 2), Randy (deliver 16 sports cars), Tyrone (destroy the Synthetic Labs, Jason only) and Bret (hunting, Jason only). All of them stay available after the story, and quest givers who vanish temporarily always return, so do them as they appear or save them for free-roam.',
-    trophyIds: [22, 23, 24, 26, 27, 29],
+    title: 'Stage 3 — Collectibles & the map',
+    count: '10 trophies',
+    text: 'Sweep Leonida for what is hidden in it: card sets, meditation spots, WAiNK It locations, vehicles, garage properties and every one of the 52 areas.',
+    trophies: [
+      "Don't Touch My Deck", 'You WAiNKer!', 'Positive Mental Attitude', 'Whip It Good',
+      'The Goodtime State', 'Little Boxes', 'On the Spot', 'Top Fun',
+      'Earn Cash, Not Kudos', 'The Shootist',
+    ],
+    tip: 'Do the shooting range and the races here too — 42 gold medals and 20 different race wins are skill work, best done while your aim is warm.',
   },
   {
-    stage: 4,
-    title: 'The 100% Completion checklist',
-    time: 'About 100 hours',
-    text: 'After the credits the checklist opens under Progress, then Stats, then 100% Completion. It is lenient — closer to 60% true completion: scan 200 of 277 base-model vehicles, study 100 of 255 animals, finish 70 of 80 challenges, meditate at 15 of 18 spots, do 300 stunts, complete any 100 optional missions, rob all 39 gang operations and all 8 bank vaults, and finish all 15 target decks. Most of it is already part-done from the story. This stage also earns the gold A Long Road and, along the way, the stunt, shooting-range, drone-race, challenge, card-set, WAiNK, vehicle, robbery and money trophies.',
-    trophyIds: [14, 15, 17, 18, 19, 30, 31, 32, 35, 40, 41, 42, 43, 52],
+    title: 'Stage 4 — The long grinds',
+    count: '8 trophies',
+    text: 'The counts that only move with time: 250 stunts, 50 challenges, 5 bank vaults, 9 gang operations, $250,000 laundered and $100,000 spent, plus 100% completion itself.',
+    trophies: [
+      'Cunning Stunts', 'One Last Thing', 'Maximum Withdrawal', 'Pest Control',
+      'Dime on the Dollar', 'Treat Yo Self', 'A Long Road', 'Master of None',
+    ],
+    tip: 'Check the in-game completion list before this stage: it shows exactly which category is holding back 100%, so you grind the right thing.',
   },
   {
-    stage: 5,
-    title: 'Strangers & Freaks and clean-up',
-    time: 'About 10 hours',
-    text: 'Finish 8 stranger mission strands — Kirk, Kyle, Yago and Pilot Pete are confirmed to count — and clear whatever is left: the one-off trophies (the VCIA plane, the Rhino tank, the blue Banshee showroom smash, the Ocean Beach cocktail, the UFO easter egg), the two still-unconfirmed ones, and the money trophies (spend $100,000, buy all 8 garages, register 10 vehicles). Do Yago’s Race Against Yago as soon as it appears: it is time-sensitive.',
-    trophyIds: [25, 37, 38, 44, 45, 46, 47, 48, 49, 50, 51, 53, 54, 55],
-  },
-  {
-    stage: 6,
-    title: 'Platinum: Vice Got a Price!',
-    time: 'The moment the last trophy pops',
-    text: 'Earn the other 54 trophies and the platinum is yours. No extra task, no multiplayer, no DLC. PowerPyx estimates the whole run at about 200 hours and difficulty 4 out of 10.',
-    trophyIds: [1],
+    title: 'Stage 5 — Platinum',
+    count: '1 trophy',
+    text: 'When the other 54 are ticked, Vice Got a Price! unlocks on its own. There is nothing left to do but enjoy being a Leonida Legend.',
+    trophies: ['Vice Got a Price!'],
+    tip: 'If anything is still unticked, the checklist filter “Hide earned” shows exactly what is left.',
   },
 ];
 
-export function renderRoadmap(roadmapElement, trophiesById, earnedIds) {
-  roadmapElement.replaceChildren();
-  for (const stage of ROADMAP_STAGES) {
-    const item = document.createElement('li');
-    const time = document.createElement('div');
-    time.className = 'stage-time';
-    time.textContent = `Stage ${stage.stage} · ${stage.time}`;
-    const heading = document.createElement('h3');
-    heading.textContent = stage.title;
+// Renders the stages into a <ol> and marks, per stage, how many of its
+// trophies the reader has already earned.
+export function renderStages(listElement, trophies, earned) {
+  listElement.replaceChildren();
+  for (const stage of STAGES) {
+    const li = document.createElement('li');
+    li.className = 'stage';
+    const done = stage.trophies.filter((name) => earned.has(name)).length;
+    const title = document.createElement('h3');
+    title.textContent = stage.title;
+    const count = document.createElement('p');
+    count.className = 'stage-count';
+    count.textContent = `${stage.count} — ${done} of ${stage.trophies.length} earned`;
     const text = document.createElement('p');
     text.textContent = stage.text;
-    const trophiesLine = document.createElement('p');
-    trophiesLine.className = 'stage-trophies';
-    const names = stage.trophyIds.map((id) => {
-      const trophy = trophiesById.get(id);
-      if (!trophy) return '';
-      const mark = earnedIds.has(id) ? '✓ ' : '';
-      return `${mark}${trophy.name}`;
-    });
-    trophiesLine.textContent = `Trophies: ${names.join(' · ')}`;
-    item.append(time, heading, text, trophiesLine);
-    roadmapElement.append(item);
-  }
-}
-
-// The missables view: the one trophy that can be missed, shown in full, with
-// the same guide and sources as the checklist's detail pane.
-export function renderMissables(container, trophies, earnedIds, renderDetailInto) {
-  container.replaceChildren();
-  const missable = trophies.filter((trophy) => trophy.missable);
-  if (missable.length === 0) {
-    const note = document.createElement('p');
-    note.textContent = 'No trophy in this list is missable.';
-    container.append(note);
-    return;
-  }
-  for (const trophy of missable) {
-    const card = document.createElement('div');
-    card.className = 'detail';
-    card.style.position = 'static';
-    renderDetailInto(card, trophy, earnedIds);
-    container.append(card);
+    const names = document.createElement('ul');
+    for (const name of stage.trophies) {
+      const item = document.createElement('li');
+      const trophy = trophies.find((t) => t.name === name);
+      item.textContent = earned.has(name) ? `✓ ${name}` : name;
+      if (trophy) item.textContent += ` — ${trophy.description}`;
+      names.append(item);
+    }
+    const tip = document.createElement('p');
+    tip.textContent = `Tip: ${stage.tip}`;
+    li.append(title, count, text, names, tip);
+    listElement.append(li);
   }
 }

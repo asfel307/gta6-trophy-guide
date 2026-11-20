@@ -1,190 +1,109 @@
-// Rendering for the checklist view: the progress counters, the trophy list
-// and the detail pane that opens beside it. Everything is built with DOM
-// calls, so trophy names and guide text are never pasted into HTML strings.
+// views.js — everything the reader sees: the checklist rows, the guide
+// detail pane, the progress header, the missables list and the tab switching.
+// All text is set with textContent, never innerHTML, so trophy names and
+// descriptions can never inject markup.
 
-import { KIND_LABELS, countByGrade, countByKind, isSpoilerHidden } from './filters.js';
+import { gradeLabel, kindLabel, countText } from './data.js';
+import { displayName, displayDescription, isSpoilerHidden } from './filters.js';
 
-const GRADE_ORDER = ['platinum', 'gold', 'silver', 'bronze'];
+// One checklist row: a tick box, the name + description, and the grade badge.
+// Missable trophies carry a visible flag; counted trophies show their target.
+export function trophyRow(trophy, earned, spoilersOn, onToggle, onSelect, selected) {
+  const li = document.createElement('li');
+  const row = document.createElement('button');
+  row.type = 'button';
+  row.className = 'trophy-row' + (earned.has(trophy.name) ? ' earned' : '') + (selected ? ' selected' : '');
+  row.addEventListener('click', (event) => {
+    if (event.target instanceof HTMLInputElement) return;
+    onSelect(trophy);
+  });
 
-export function renderProgressCounters(trophies, earnedIds) {
-  const text = document.getElementById('progress-text');
-  const pct = document.getElementById('progress-pct');
-  const fill = document.getElementById('progress-fill');
-  const counters = document.getElementById('counters');
-  const total = trophies.length;
-  const earned = earnedIds.size;
-  const percent = total === 0 ? 0 : Math.round((earned / total) * 100);
-  text.textContent = `${earned} of ${total} earned`;
-  pct.textContent = `${percent}%`;
-  fill.style.width = `${percent}%`;
+  const box = document.createElement('input');
+  box.type = 'checkbox';
+  box.checked = earned.has(trophy.name);
+  box.setAttribute('aria-label', `Earned: ${displayName(trophy, earned, spoilersOn)}`);
+  box.addEventListener('change', () => onToggle(trophy, box.checked));
 
-  const byGrade = countByGrade(trophies, earnedIds);
-  const byKind = countByKind(trophies, earnedIds);
-  counters.replaceChildren();
-  for (const grade of GRADE_ORDER) {
-    const [got, all] = byGrade[grade];
-    const span = document.createElement('span');
-    const label = grade.charAt(0).toUpperCase() + grade.slice(1);
-    const strong = document.createElement('b');
-    strong.textContent = `${got}/${all}`;
-    span.append(document.createTextNode(`${label} `), strong);
-    counters.append(span);
+  const body = document.createElement('span');
+  const name = document.createElement('span');
+  name.className = 'trophy-name';
+  name.textContent = displayName(trophy, earned, spoilersOn);
+  const desc = document.createElement('span');
+  desc.className = 'trophy-desc';
+  desc.textContent = displayDescription(trophy, earned, spoilersOn);
+  const kind = document.createElement('span');
+  kind.className = 'trophy-kind';
+  kind.textContent = kindLabel(trophy.kind);
+  body.append(name, document.createElement('br'), desc, document.createElement('br'), kind);
+  if (trophy.missable) {
+    const flag = document.createElement('span');
+    flag.className = 'flag';
+    flag.textContent = 'MISSABLE';
+    body.append(' ', flag);
   }
-  const kinds = ['story', 'side', 'collectibles', 'activities', 'robbery', 'exploration'];
-  for (const kind of kinds) {
-    const entry = byKind.get(kind);
-    if (!entry) continue;
-    const span = document.createElement('span');
-    const strong = document.createElement('b');
-    strong.textContent = `${entry[0]}/${entry[1]}`;
-    span.append(document.createTextNode(`${KIND_LABELS[kind]} `), strong);
-    counters.append(span);
+  const target = countText(trophy);
+  if (target) {
+    const chip = document.createElement('span');
+    chip.className = 'count-chip';
+    chip.textContent = ` · ${target}`;
+    body.append(chip);
   }
+
+  const badge = document.createElement('span');
+  badge.className = `grade-badge grade-${trophy.grade}`;
+  badge.textContent = gradeLabel(trophy.grade);
+
+  row.append(box, body, badge);
+  li.append(row);
+  return li;
 }
 
-function badge(text, className) {
-  const span = document.createElement('span');
-  span.className = `badge ${className}`;
-  span.textContent = text;
-  return span;
-}
-
-export function renderTrophyList(listElement, trophies, state, callbacks) {
-  listElement.replaceChildren();
-  if (trophies.length === 0) {
-    const note = document.createElement('li');
-    note.className = 'empty-note';
-    if (state.kind === 'online') {
-      note.textContent =
-        'No online trophies in this list — all 55 trophies are single-player and offline (PowerPyx). Nothing here needs a connection or another player.';
-    } else {
-      note.textContent = 'No trophies match these filters. Clear the search or widen the kind and grade filters.';
-    }
-    listElement.append(note);
-    return;
-  }
-  for (const trophy of trophies) {
-    const item = document.createElement('li');
-    const row = document.createElement('button');
-    row.type = 'button';
-    row.className = 'trophy' + (state.earnedIds.has(trophy.id) ? ' earned' : '');
-    if (state.selectedId === trophy.id) row.classList.add('selected');
-    row.addEventListener('click', () => callbacks.onSelect(trophy.id));
-
-    const box = document.createElement('input');
-    box.type = 'checkbox';
-    box.checked = state.earnedIds.has(trophy.id);
-    box.setAttribute('aria-label', `Mark ${trophy.name} as earned`);
-    box.addEventListener('click', (event) => event.stopPropagation());
-    box.addEventListener('change', () => callbacks.onToggleEarned(trophy.id, box.checked));
-
-    const body = document.createElement('div');
-    body.className = 'trophy-body';
-    const name = document.createElement('div');
-    name.className = 'trophy-name';
-    const hidden = isSpoilerHidden(trophy, state.earnedIds, state.hideSpoilers);
-    name.textContent = hidden ? 'Hidden story trophy — earn it to reveal' : trophy.name;
-    const desc = document.createElement('div');
-    desc.className = 'trophy-desc';
-    desc.textContent = hidden ? 'Its name and description stay hidden until you earn it.' : trophy.description;
-    const meta = document.createElement('div');
-    meta.className = 'trophy-meta';
-    meta.append(
-      badge(trophy.grade, trophy.grade),
-      badge(KIND_LABELS[trophy.kind] || trophy.kind, 'kind'),
-    );
-    if (trophy.missable) meta.append(badge('Missable', 'missable'));
-    if (trophy.hidden) meta.append(badge('Hidden on PSN', 'hidden-tag'));
-    if (trophy.countLabel) meta.append(badge(trophy.countLabel, 'kind'));
-    body.append(name, desc, meta);
-    row.append(box, body);
-    item.append(row);
-    listElement.append(item);
-  }
-}
-
-// The detail pane: official name, description and grade, the guide in our own
-// words, and the sources it cites — plus the missable warning where it applies.
-export function renderDetail(detailElement, trophy, state, callbacks) {
+// The detail pane: the selected trophy's guide in full, its sources, and a
+// plain note when a step has not yet been checked in the game.
+export function renderDetail(detailElement, trophy, earned, spoilersOn) {
   detailElement.replaceChildren();
   if (!trophy) {
-    const placeholder = document.createElement('p');
-    placeholder.className = 'placeholder';
-    placeholder.textContent =
-      'Select a trophy on the left to read its guide: the official description, how to earn it, and the sources behind each step.';
-    detailElement.append(placeholder);
+    const empty = document.createElement('p');
+    empty.className = 'detail-empty';
+    empty.textContent = 'Pick a trophy on the left to read its guide and sources.';
+    detailElement.append(empty);
     return;
   }
-  const hidden = isSpoilerHidden(trophy, state.earnedIds, state.hideSpoilers);
+  const hidden = isSpoilerHidden(trophy, earned, spoilersOn);
+  const title = document.createElement('h3');
+  title.textContent = displayName(trophy, earned, spoilersOn);
+  const meta = document.createElement('p');
+  meta.className = 'meta-line';
+  meta.textContent = `${gradeLabel(trophy.grade)} · ${kindLabel(trophy.kind)}${trophy.missable ? ' · Missable — do it on time' : ''}${trophy.hidden ? ' · Hidden on PlayStation until earned' : ''}`;
+  const desc = document.createElement('p');
+  desc.textContent = hidden ? 'Hidden until earned.' : trophy.description;
+  const guide = document.createElement('p');
+  guide.className = 'guide-text';
+  guide.textContent = hidden ? 'This is a story trophy. Its guide stays hidden with its name until you earn it.' : trophy.guide;
+  const sources = document.createElement('p');
+  sources.className = 'sources';
+  sources.textContent = `Sources: ${trophy.sources}`;
+  detailElement.append(title, meta, desc, guide, sources);
+}
 
-  const heading = document.createElement('h2');
-  heading.textContent = hidden ? 'Hidden story trophy' : trophy.name;
-  detailElement.append(heading);
+// The header counters: how many are earned, and the fill of the progress bar.
+export function renderProgress(trophies, earned) {
+  const total = trophies.length;
+  const done = earned.size;
+  document.getElementById('earned-count').textContent = String(done);
+  document.getElementById('progress-fill').style.width = `${total ? Math.round((done / total) * 100) : 0}%`;
+  document.getElementById('platinum-note').textContent =
+    done === total && total > 0
+      ? 'Platinum earned — you are a Leonida Legend!'
+      : '1 platinum · 2 gold · 6 silver · 46 bronze';
+}
 
-  const meta = document.createElement('div');
-  meta.className = 'trophy-meta';
-  meta.append(badge(trophy.grade, trophy.grade), badge(KIND_LABELS[trophy.kind] || trophy.kind, 'kind'));
-  if (trophy.missable) meta.append(badge('Missable', 'missable'));
-  if (trophy.hidden) meta.append(badge('Hidden on PSN', 'hidden-tag'));
-  detailElement.append(meta);
-
-  if (hidden) {
-    const note = document.createElement('p');
-    note.className = 'spoiler-note';
-    note.textContent =
-      'Spoilers are hidden. Turn off “Hide story spoilers” above, or earn this trophy in game, to reveal its name, description and guide.';
-    detailElement.append(note);
-  } else {
-    const official = document.createElement('p');
-    official.className = 'official';
-    official.textContent = `Official: “${trophy.description}” — ${trophy.grade}.`;
-    detailElement.append(official);
-    if (trophy.countLabel) {
-      const count = document.createElement('p');
-      count.className = 'count-line';
-      count.textContent = `Target: ${trophy.countLabel}.`;
-      detailElement.append(count);
-    }
-    if (trophy.missable) {
-      const warn = document.createElement('p');
-      warn.className = 'spoiler-note';
-      warn.textContent =
-        'Missable: the Chapter 1 balcony meditation at Jason’s house disappears after Chapter 1. Do it before the chapter ends and keep a Chapter 1 save until this trophy pops.';
-      detailElement.append(warn);
-    }
-    const guideHeading = document.createElement('h3');
-    guideHeading.textContent = 'How to earn it';
-    const guideText = document.createElement('p');
-    guideText.className = 'guide-text';
-    guideText.textContent = trophy.guide;
-    detailElement.append(guideHeading, guideText);
-
-    const sourcesHeading = document.createElement('h3');
-    sourcesHeading.textContent = 'Sources';
-    const sources = document.createElement('ul');
-    sources.className = 'sources';
-    for (const source of trophy.sources || []) {
-      const item = document.createElement('li');
-      if (source.url) {
-        const link = document.createElement('a');
-        link.href = source.url;
-        link.textContent = source.name;
-        link.rel = 'noopener';
-        item.append(link);
-      } else {
-        item.textContent = source.name;
-      }
-      sources.append(item);
-    }
-    detailElement.append(sourcesHeading, sources);
+// Shows or hides the four views and marks the active tab.
+export function switchView(name) {
+  for (const view of ['checklist', 'roadmap', 'missables', 'settings']) {
+    document.getElementById(`view-${view}`).classList.toggle('hidden', view !== name);
   }
-
-  const earnRow = document.createElement('div');
-  earnRow.className = 'earn-row';
-  const earnButton = document.createElement('button');
-  earnButton.type = 'button';
-  earnButton.textContent = state.earnedIds.has(trophy.id) ? 'Mark as not earned' : 'Mark as earned';
-  earnButton.addEventListener('click', () => callbacks.onToggleEarned(trophy.id, !state.earnedIds.has(trophy.id)));
-  earnRow.append(earnButton);
-  detailElement.append(earnRow);
+  for (const tab of document.querySelectorAll('#tabs button')) {
+    tab.classList.toggle('active', tab.dataset.view === name);
+  }
 }
